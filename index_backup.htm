@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Zone - Interactive Experiments</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: block;
+            margin: 20px auto;
+            background: white;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .counter {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 15px 0;
+        }
+
+        #ballContainer {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .ball {
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        #reactionBox {
+            width: 100%;
+            height: 200px;
+            background: #ccc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            margin: 20px 0;
+            user-select: none;
+        }
+
+        #memoryGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: #667eea;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            animation: fall 3s linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎉 Fun Zone</h1>
+            <p>Interactive Games & Experiments</p>
+        </header>
+
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('home')">Home</button>
+            <button class="tab-button" onclick="switchTab('games')">Games</button>
+            <button class="tab-button" onclick="switchTab('tools')">Tools</button>
+            <button class="tab-button" onclick="switchTab('visuals')">Visuals</button>
+        </div>
+
+        <!-- HOME TAB -->
+        <div id="home" class="tab-content active">
+            <div class="card">
+                <h2>Welcome to Fun Zone!</h2>
+                <p>Click the buttons above to explore different games and experiments:</p>
+                <ul>
+                    <li><strong>Games:</strong> Click Counter, Reaction Time, Memory Match, Snake, Bouncing Balls</li>
+                    <li><strong>Tools:</strong> Random Generator, Password Strength Checker</li>
+                    <li><strong>Visuals:</strong> Particle Party, Spinning Wheel</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- GAMES TAB -->
+        <div id="games" class="tab-content">
+            <div class="card">
+                <h2>🎮 Click Counter</h2>
+                <p>Press SPACE as many times as you can in 10 seconds!</p>
+                <div class="counter" id="clickCount">0</div>
+                <div id="clickTimer" style="text-align: center; font-size: 1.2em; margin: 10px 0; color: #667eea;">Ready?</div>
+                <button onclick="startClickGame()">START GAME</button>
+            </div>
+
+            <div class="card">
+                <h2>⚡ Reaction Time Test</h2>
+                <p>Click the box as fast as you can when it turns green!</p>
+                <div id="reactionBox" onclick="initReactionTest()">Click to start</div>
+                <div class="result" id="reactionResult" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h2>🧠 Memory Match</h2>
+                <p>Click cards to find matching pairs!</p>
+                <div id="memoryGrid"></div>
+                <button onclick="resetMemoryGame()">New Game</button>
+                <div class="result" id="memoryResult" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h2>🐍 Snake Game</h2>
+                <p>Use arrow keys to move. Eat red dots to grow!</p>
+                <canvas id="snakeCanvas" width="400" height="400"></canvas>
+                <button onclick="startSnakeGame()">Start Game</button>
+                <div class="result" id="snakeScore" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h2>⚽ Bouncing Balls</h2>
+                <p>Click in the box to create bouncing balls!</p>
+                <div id="ballContainer"></div>
+                <button onclick="clearAllBalls()">Clear All</button>
+            </div>
+        </div>
+
+        <!-- TOOLS TAB -->
+        <div id="tools" class="tab-content">
+            <div class="card">
+                <h2>🎲 Random Generator</h2>
+                <label>What do you want?</label>
+                <select id="randomType">
+                    <option value="number">Random Number (1-100)</option>
+                    <option value="name">Random Name</option>
+                    <option value="color">Random Color</option>
+                    <option value="emoji">Random Emoji</option>
+                </select>
+                <button onclick="generateRandom()">Generate!</button>
+                <div class="result" id="randomResult" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Password Strength</h2>
+                <label>Enter a password:</label>
+                <input type="password" id="passInput" placeholder="Type a password..." oninput="checkPasswordStrength()">
+                <div style="width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin: 10px 0; overflow: hidden;">
+                    <div id="passBar" style="height: 100%; width: 0%; background: red; transition: width 0.3s;"></div>
+                </div>
+                <div class="result" id="passMessage">Enter a password</div>
+            </div>
+        </div>
+
+        <!-- VISUALS TAB -->
+        <div id="visuals" class="tab-content">
+            <div class="card">
+                <h2>✨ Particle Party</h2>
+                <p>Click the canvas to create particles!</p>
+                <canvas id="particleCanvas" width="600" height="400"></canvas>
+                <button onclick="createConfetti()">🎉 CONFETTI</button>
+            </div>
+
+            <div class="card">
+                <h2>🌀 Spinning Wheel</h2>
+                <p>Click to spin the wheel!</p>
+                <canvas id="spinCanvas" width="400" height="400"></canvas>
+                <button onclick="spinTheWheel()">SPIN!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
+        const emojis = ['😀', '😂', '🎉', '🌟', '⭐', '🦄', '🎨', '🎭'];
+        const names = ['Alex', 'Jordan', 'Casey', 'Blake', 'Riley', 'Morgan', 'Cameron', 'Taylor'];
+
+        // TAB SWITCHING
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // CLICK COUNTER
+        let clickCount = 0;
+        let clickActive = false;
+
+        function startClickGame() {
+            clickCount = 0;
+            clickActive = true;
+            let timeLeft = 10;
+            
+            document.getElementById('clickCount').textContent = '0';
+            document.getElementById('clickTimer').textContent = timeLeft;
+            event.target.disabled = true;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('clickTimer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    clickActive = false;
+                    document.getElementById('clickTimer').textContent = `Game Over! Score: ${clickCount}`;
+                    event.target.disabled = false;
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (clickActive && e.code === 'Space') {
+                clickCount++;
+                document.getElementById('clickCount').textContent = clickCount;
+            }
+        });
+
+        // REACTION TIME TEST
+        let reactionTime = 0;
+
+        function initReactionTest() {
+            const box = document.getElementById('reactionBox');
+            box.style.background = '#ccc';
+            box.textContent = 'Wait for green...';
+            document.getElementById('reactionResult').style.display = 'none';
+            
+            setTimeout(() => {
+                box.style.background = '#4ECDC4';
+                box.textContent = 'CLICK NOW!';
+                reactionTime = Date.now();
+                
+                const handler = () => {
+                    const time = Date.now() - reactionTime;
+                    document.getElementById('reactionResult').style.display = 'block';
+                    document.getElementById('reactionResult').textContent = `⚡ Reaction Time: ${time}ms`;
+                    box.style.background = '#FF6B6B';
+                    box.textContent = 'Click to try again';
+                    box.removeEventListener('click', handler);
+                };
+                
+                box.addEventListener('click', handler);
+            }, 1500 + Math.random() * 2500);
+        }
+
+        // MEMORY GAME
+        let memoryCards = [];
+        let memoryFlipped = [];
+
+        function resetMemoryGame() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            memoryCards = [];
+            memoryFlipped = [];
+            
+            const pairs = ['🌟', '🎨', '🎭', '🎪', '🎯', '🎲', '🎸', '🎬'];
+            const cards = [...pairs, ...pairs].sort(() => Math.random() - 0.5);
+            
+            cards.forEach((card, i) => {
+                const el = document.createElement('div');
+                el.className = 'memory-card';
+                el.textContent = '?';
+                el.dataset.card = card;
+                el.dataset.matched = 'false';
+                el.onclick = () => flipCard(el, i);
+                grid.appendChild(el);
+                memoryCards.push(el);
+            });
+        }
+
+        function flipCard(el, idx) {
+            if (el.dataset.matched === 'true' || memoryFlipped.includes(idx)) return;
+            el.textContent = el.dataset.card;
+            el.style.background = '#4ECDC4';
+            memoryFlipped.push(idx);
+
+            if (memoryFlipped.length === 2) {
+                const [i1, i2] = memoryFlipped;
+                if (memoryCards[i1].dataset.card === memoryCards[i2].dataset.card) {
+                    memoryCards[i1].dataset.matched = 'true';
+                    memoryCards[i2].dataset.matched = 'true';
+                    memoryFlipped = [];
+                    if (document.querySelectorAll('[data-matched="true"]').length === 16) {
+                        document.getElementById('memoryResult').style.display = 'block';
+                        document.getElementById('memoryResult').textContent = '🎉 You Won!';
+                    }
+                } else {
+                    setTimeout(() => {
+                        memoryCards[i1].textContent = '?';
+                        memoryCards[i1].style.background = '#667eea';
+                        memoryCards[i2].textContent = '?';
+                        memoryCards[i2].style.background = '#667eea';
+                        memoryFlipped = [];
+                    }, 800);
+                }
+            }
+        }
+
+        // RANDOM GENERATOR
+        function generateRandom() {
+            const type = document.getElementById('randomType').value;
+            const result = document.getElementById('randomResult');
+            let value = '';
+
+            if (type === 'number') value = Math.floor(Math.random() * 100) + 1;
+            else if (type === 'name') value = names[Math.floor(Math.random() * names.length)];
+            else if (type === 'color') value = colors[Math.floor(Math.random() * colors.length)];
+            else if (type === 'emoji') value = emojis[Math.floor(Math.random() * emojis.length)];
+
+            result.style.display = 'block';
+            if (type === 'color') {
+                result.style.background = value;
+                result.style.color = 'white';
+            } else {
+                result.style.background = '#f0f0f0';
+                result.style.color = '#333';
+            }
+            result.textContent = value;
+        }
+
+        // PASSWORD STRENGTH
+        function checkPasswordStrength() {
+            const pass = document.getElementById('passInput').value;
+            let strength = 0;
+
+            if (pass.length >= 8) strength += 25;
+            if (pass.length >= 12) strength += 15;
+            if (/[a-z]/.test(pass)) strength += 20;
+            if (/[A-Z]/.test(pass)) strength += 20;
+            if (/[0-9]/.test(pass)) strength += 20;
+
+            document.getElementById('passBar').style.width = strength + '%';
+            
+            if (strength < 30) {
+                document.getElementById('passMessage').textContent = '🔴 Weak';
+                document.getElementById('passBar').style.background = 'red';
+            } else if (strength < 60) {
+                document.getElementById('passMessage').textContent = '🟡 Fair';
+                document.getElementById('passBar').style.background = 'orange';
+            } else if (strength < 80) {
+                document.getElementById('passMessage').textContent = '🟢 Good';
+                document.getElementById('passBar').style.background = 'yellow';
+            } else {
+                document.getElementById('passMessage').textContent = '💚 Strong';
+                document.getElementById('passBar').style.background = 'green';
+            }
+        }
+
+        // PARTICLES
+        const particles = [];
+        const particleCanvas = document.getElementById('particleCanvas');
+        let particleCtx = particleCanvas ? particleCanvas.getContext('2d') : null;
+
+        if (particleCanvas) {
+            particleCanvas.addEventListener('click', (e) => {
+                const rect = particleCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                for (let i = 0; i < 30; i++) {
+                    particles.push({
+                        x, y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        life: 1,
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+            });
+
+            function animateParticles() {
+                if (!particleCtx) return;
+                particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+                
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.2;
+                    p.life -= 0.02;
+
+                    particleCtx.fillStyle = p.color;
+                    particleCtx.globalAlpha = p.life;
+                    particleCtx.beginPath();
+                    particleCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    particleCtx.fill();
+
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+                particleCtx.globalAlpha = 1;
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti';
+                el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.top = '-50px';
+                el.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 3000);
+            }
+        }
+
+        // SPINNER
+        const spinCanvas = document.getElementById('spinCanvas');
+        let spinCtx = spinCanvas ? spinCanvas.getContext('2d') : null;
+        let rotation = 0;
+        let isSpinning = false;
+
+        function drawWheel(angle) {
+            if (!spinCtx) return;
+            spinCtx.clearRect(0, 0, 400, 400);
+            spinCtx.save();
+            spinCtx.translate(200, 200);
+            spinCtx.rotate(angle * Math.PI / 180);
+
+            for (let i = 0; i < 8; i++) {
+                spinCtx.fillStyle = colors[i];
+                spinCtx.beginPath();
+                spinCtx.arc(0, 0, 150, (i * 45) * Math.PI / 180, ((i + 1) * 45) * Math.PI / 180);
+                spinCtx.lineTo(0, 0);
+                spinCtx.fill();
+            }
+
+            spinCtx.fillStyle = 'white';
+            spinCtx.beginPath();
+            spinCtx.arc(0, 0, 30, 0, Math.PI * 2);
+            spinCtx.fill();
+            spinCtx.restore();
+        }
+
+        function spinTheWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            let velocity = 25;
+
+            function spin() {
+                rotation += velocity;
+                velocity *= 0.98;
+                drawWheel(rotation);
+
+                if (velocity > 0.1) {
+                    requestAnimationFrame(spin);
+                } else {
+                    isSpinning = false;
+                }
+            }
+            spin();
+        }
+
+        if (spinCtx) drawWheel(0);
+
+        // SNAKE GAME
+        const snakeCanvas = document.getElementById('snakeCanvas');
+        let snakeCtx = snakeCanvas ? snakeCanvas.getContext('2d') : null;
+
+        let snake = [{x: 10, y: 10}];
+        let food = {x: 15, y: 15};
+        let direction = {x: 1, y: 0};
+        let nextDirection = {x: 1, y: 0};
+        let snakeScore = 0;
+        let snakeRunning = false;
+        let snakeGameLoop = null;
+
+        function startSnakeGame() {
+            if (snakeRunning) return;
+            snake = [{x: 10, y: 10}];
+            food = {x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20)};
+            direction = {x: 1, y: 0};
+            nextDirection = {x: 1, y: 0};
+            snakeScore = 0;
+            snakeRunning = true;
+            document.getElementById('snakeScore').style.display = 'none';
+
+            document.addEventListener('keydown', handleSnakeKeys);
+
+            snakeGameLoop = setInterval(() => {
+                if (!snakeRunning) return;
+                
+                direction = nextDirection;
+                const head = {...snake[0]};
+                head.x += direction.x;
+                head.y += direction.y;
+
+                if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) {
+                    endSnakeGame();
+                    return;
+                }
+
+                for (let seg of snake) {
+                    if (seg.x === head.x && seg.y === head.y) {
+                        endSnakeGame();
+                        return;
+                    }
+                }
+
+                snake.unshift(head);
+
+                if (head.x === food.x && head.y === food.y) {
+                    snakeScore += 10;
+                    food = {x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20)};
+                } else {
+                    snake.pop();
+                }
+
+                drawSnake();
+            }, 100);
+        }
+
+        function handleSnakeKeys(e) {
+            if (!snakeRunning) return;
+            if (e.key === 'ArrowUp' && direction.y === 0) nextDirection = {x: 0, y: -1};
+            if (e.key === 'ArrowDown' && direction.y === 0) nextDirection = {x: 0, y: 1};
+            if (e.key === 'ArrowLeft' && direction.x === 0) nextDirection = {x: -1, y: 0};
+            if (e.key === 'ArrowRight' && direction.x === 0) nextDirection = {x: 1, y: 0};
+        }
+
+        function drawSnake() {
+            if (!snakeCtx) return;
+            snakeCtx.fillStyle = '#f0f0f0';
+            snakeCtx.fillRect(0, 0, 400, 400);
+
+            snakeCtx.fillStyle = '#FF6B6B';
+            snakeCtx.fillRect(food.x * 20 + 2, food.y * 20 + 2, 16, 16);
+
+            snake.forEach((seg, i) => {
+                snakeCtx.fillStyle = i === 0 ? '#45B7D1' : '#4ECDC4';
+                snakeCtx.fillRect(seg.x * 20 + 1, seg.y * 20 + 1, 18, 18);
+            });
+
+            snakeCtx.fillStyle = '#667eea';
+            snakeCtx.font = 'bold 16px Arial';
+            snakeCtx.fillText(`Score: ${snakeScore}`, 10, 20);
+        }
+
+        function endSnakeGame() {
+            clearInterval(snakeGameLoop);
+            snakeRunning = false;
+            document.removeEventListener('keydown', handleSnakeKeys);
+            document.getElementById('snakeScore').style.display = 'block';
+            document.getElementById('snakeScore').textContent = `🐍 Game Over! Final Score: ${snakeScore}`;
+        }
+
+        // BOUNCING BALLS
+        const ballContainer = document.getElementById('ballContainer');
+        let balls = [];
+
+        if (ballContainer) {
+            ballContainer.addEventListener('click', (e) => {
+                const rect = ballContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                createBall(x, y);
+            });
+
+            function updateBalls() {
+                ballContainer.innerHTML = '';
+                balls.forEach(b => {
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    b.vy += 0.3;
+
+                    if (b.x < 0 || b.x + b.size > ballContainer.clientWidth) {
+                        b.vx *= -0.8;
+                        b.x = Math.max(0, Math.min(ballContainer.clientWidth - b.size, b.x));
+                    }
+                    if (b.y + b.size > ballContainer.clientHeight) {
+                        b.vy *= -0.8;
+                        b.y = ballContainer.clientHeight - b.size;
+                    }
+
+                    const div = document.createElement('div');
+                    div.style.cssText = `position: absolute; width: ${b.size}px; height: ${b.size}px; background: ${b.color}; border-radius: 50%; left: ${b.x}px; top: ${b.y}px;`;
+                    ballContainer.appendChild(div);
+                });
+
+                requestAnimationFrame(updateBalls);
+            }
+
+            updateBalls();
+        }
+
+        function createBall(x, y) {
+            balls.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 10,
+                vy: (Math.random() - 0.5) * 10,
+                size: Math.random() * 20 + 10,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+
+        function clearAllBalls() {
+            balls = [];
+            ballContainer.innerHTML = '';
+        }
+
+        // Initialize first game on load
+        resetMemoryGame();
+    </script>
+</body>
+</html>
